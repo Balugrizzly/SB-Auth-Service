@@ -8,4 +8,5 @@ import (
 func autoMigration(db *gorm.DB) {
 	// Migrate the schema
 	db.AutoMigrate(&User{})
+	db.AutoMigrate(&UserSession{})
 }

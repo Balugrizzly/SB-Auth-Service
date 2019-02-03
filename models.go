@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,8 +14,8 @@ type User struct {
 
 type UserSession struct {
 	gorm.Model
-	User         User
-	SessionToken string
-	LoginTime    *time.Time
-	LastSeen     *time.Time
+	User          User
+	SessionToken  string
+	LoginTimeUnix int64
+	LastSeenUnix  int64
 }

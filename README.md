@@ -14,3 +14,4 @@ Authentication for SpeedBlocks
 -go get -u github.com/jinzhu/gorm
 -go get github.com/mattn/go-sqlite3
 -go get golang.org/x/crypto/bcrypt
+-go get github.com/dgrijalva/jwt-go
