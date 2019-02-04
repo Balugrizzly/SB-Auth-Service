@@ -29,8 +29,6 @@ func main() {
 	}
 	defer db.Close()
 
-	db.LogMode(true)
-
 	// db migrations
 	autoMigration(db)
 
@@ -46,11 +44,20 @@ func main() {
 
 	// All request methods
 	r.HandleFunc("/getuser", env.getUser)
-	// r.HandleFunc("/usernameexists", env.getUser)
+	r.HandleFunc("/usernameisavailable", env.usernameIsAvailable)
 
 	// Server
 	log.Fatal(http.ListenAndServe(":5000", r))
 
+}
+func (env *Env) usernameIsAvailable(w http.ResponseWriter, r *http.Request) {
+	// checks if given username is available
+	// returns a json object with status true if available otherwise false
+	w.Header().Set("Content-Type", "application/json")
+	var reqUser User
+	_ = json.NewDecoder(r.Body).Decode(&reqUser)
+
+	fmt.Fprintf(w, "{%q: %v}", "status", !usernameExists(env.db, reqUser.Name))
 }
 
 func (env *Env) updateUser(w http.ResponseWriter, r *http.Request) {
