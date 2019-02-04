@@ -7,8 +7,8 @@ import (
 // User Model
 type User struct {
 	gorm.Model
-	Name        string `json:"Name"`
-	Pw          string `json:"Pw"`
+	Name        string `json:"Name,string"`
+	Pw          string `json:"Pw,string"`
 	IsSuperuser bool   `json:"IsSuperuser"`
 }
 
