@@ -118,6 +118,17 @@ func (env *Env) deleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (env *Env) getUser(w http.ResponseWriter, r *http.Request) {
+	// gets the user by id or name
+	// returns the a user object without pw can be empty if user is not found
+	w.Header().Set("Content-Type", "application/json")
+
+	var reqUser User
+	_ = json.NewDecoder(r.Body).Decode(&reqUser)
+
+	var dBUser User
+	env.db.Where("name = ?", reqUser.Name).Or("id = ?", reqUser.ID).Find(&dBUser)
+	dBUser.Pw = ""
+	_ = json.NewEncoder(w).Encode(&dBUser)
 
 }
 
