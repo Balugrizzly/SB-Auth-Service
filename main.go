@@ -94,7 +94,27 @@ func (env *Env) updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (env *Env) deleteUser(w http.ResponseWriter, r *http.Request) {
+	// soft deletes the user
+	// returns status true on success
+	w.Header().Set("Content-Type", "application/json")
+	// get token
+	reqToken := r.Header.Get("token")
 
+	// check if token matches
+	for i, session := range userSessions {
+		if session.SessionToken == reqToken {
+			fmt.Fprintf(w, "{%q: %v}", "status", true)
+
+			// delete user
+			var dBUser User
+			env.db.Where("id = ?", session.User.ID).Find(&dBUser)
+			env.db.Delete(&dBUser)
+
+			userSessions = removeSession(userSessions, i)
+			return
+		}
+	}
+	_ = json.NewEncoder(w).Encode(ErrorResponse{Msg: "Auth failed"})
 }
 
 func (env *Env) getUser(w http.ResponseWriter, r *http.Request) {

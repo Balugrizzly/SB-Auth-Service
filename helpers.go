@@ -7,3 +7,8 @@ func usernameExists(db *gorm.DB, username string) bool {
 	db.Model(&User{}).Where("name = ?", username).Count(&usernameCount)
 	return (usernameCount > 0)
 }
+
+func removeSession(s []UserSession, i int) []UserSession {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
