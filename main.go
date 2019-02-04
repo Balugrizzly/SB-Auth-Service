@@ -29,6 +29,8 @@ func main() {
 	}
 	defer db.Close()
 
+	db.LogMode(true)
+
 	// db migrations
 	autoMigration(db)
 
@@ -36,11 +38,66 @@ func main() {
 
 	// Routes
 	r := mux.NewRouter()
+	// Post
 	r.HandleFunc("/createuser", env.createUser).Methods("POST")
 	r.HandleFunc("/authuser", env.authUser).Methods("POST")
+	r.HandleFunc("/updateuser", env.updateUser).Methods("POST")
+	r.HandleFunc("/deleteuser", env.deleteUser).Methods("POST")
+
+	// All request methods
+	r.HandleFunc("/getuser", env.getUser)
+	// r.HandleFunc("/usernameexists", env.getUser)
 
 	// Server
 	log.Fatal(http.ListenAndServe(":5000", r))
+
+}
+
+func (env *Env) updateUser(w http.ResponseWriter, r *http.Request) {
+	// updates the user
+	// returns the updated user on success
+	w.Header().Set("Content-Type", "application/json")
+
+	// get reqtoken
+	reqToken := r.Header.Get("token")
+
+	// check if token is valid
+	for _, session := range userSessions {
+		if session.SessionToken == reqToken {
+
+			var reqUser User
+			_ = json.NewDecoder(r.Body).Decode(&reqUser)
+
+			var dBUser User
+			env.db.Where("id = ?", session.User.ID).Find(&dBUser)
+
+			if dBUser.Name != reqUser.Name {
+				if usernameExists(env.db, reqUser.Name) {
+					_ = json.NewEncoder(w).Encode(ErrorResponse{Msg: "Username already exists"})
+					return
+				}
+			}
+
+			if reqUser.Name != "" {
+				dBUser.Name = reqUser.Name
+			}
+			if reqUser.Pw != "" {
+				dBUser.Pw, _ = hashPassword(reqUser.Pw)
+			}
+			env.db.Save(&dBUser)
+
+			_ = json.NewEncoder(w).Encode(&dBUser)
+			return
+		}
+	}
+	_ = json.NewEncoder(w).Encode(ErrorResponse{Msg: "Auth failed"})
+}
+
+func (env *Env) deleteUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (env *Env) getUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
