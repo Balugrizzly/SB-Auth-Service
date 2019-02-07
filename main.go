@@ -159,26 +159,49 @@ func (env *Env) authUser(w http.ResponseWriter, r *http.Request) {
 	// return token
 	fmt.Fprintf(w, "{%q: %q}", "token", token)
 
-	// update user sessions
-	sessionExist := false
+	// update/create user sessions
 	for _, session := range userSessions {
 		if session.User.ID == dBUser.ID {
-			sessionExist = true
+			// user session already exists in memory
+
+			// updating memory user session
 			session.User = dBUser
 			session.SessionToken = token
 			session.LoginTimeUnix = time.Now().Unix()
 			session.LastSeenUnix = time.Now().Unix()
+
+			//updating db user session
+			var dBSession UserSession
+			env.db.Model(&session.User).Related(&dBSession)
+			dBSession.User = dBUser
+			dBSession.UserID = session.User.ID
+			dBSession.SessionToken = token
+			dBSession.LoginTimeUnix = time.Now().Unix()
+			dBSession.LastSeenUnix = time.Now().Unix()
+			env.db.Save(&dBSession)
+
+			return
 		}
 	}
 
-	if !sessionExist {
-		userSession := UserSession{}
-		userSession.User = dBUser
-		userSession.SessionToken = token
-		userSession.LoginTimeUnix = time.Now().Unix()
-		userSession.LastSeenUnix = time.Now().Unix()
-		userSessions = append(userSessions, userSession)
-	}
+	// creating new user session
+	userSession := UserSession{}
+	userSession.User = dBUser
+	userSession.SessionToken = token
+	userSession.LoginTimeUnix = time.Now().Unix()
+	userSession.LastSeenUnix = time.Now().Unix()
+	userSessions = append(userSessions, userSession)
+
+	// updating/ creating db user session
+	var dBSession UserSession
+	env.db.Model(&userSession.User).Related(&dBSession)
+	dBSession.User = dBUser
+	dBSession.UserID = userSession.User.ID
+	dBSession.SessionToken = token
+	dBSession.LoginTimeUnix = time.Now().Unix()
+	dBSession.LastSeenUnix = time.Now().Unix()
+	env.db.Save(&dBSession)
+
 }
 
 func (env *Env) createUser(w http.ResponseWriter, r *http.Request) {
