@@ -38,6 +38,9 @@ func main() {
 	r := mux.NewRouter()
 	// Post
 	r.HandleFunc("/createuser", env.createUser).Methods("POST")
+	r.HandleFunc("/isauthenticated", env.isAuthenticated).Methods("POST")
+
+	// JWT token required
 	r.HandleFunc("/authuser", env.authUser).Methods("POST")
 	r.HandleFunc("/updateuser", env.updateUser).Methods("POST")
 	r.HandleFunc("/deleteuser", env.deleteUser).Methods("POST")
@@ -234,4 +237,20 @@ func (env *Env) createUser(w http.ResponseWriter, r *http.Request) {
 	// return user
 	_ = json.NewEncoder(w).Encode(&user)
 
+}
+
+func (env *Env) isAuthenticated(w http.ResponseWriter, r *http.Request) {
+	// returns status:True if user has a valid jwt else false
+
+	w.Header().Set("Content-Type", "application/json")
+	// get reqtoken
+	reqToken := r.Header.Get("token")
+	// check if token is valid
+	for _, session := range userSessions {
+		if session.SessionToken == reqToken {
+			fmt.Fprintf(w, "{%q: %v}", "status", true)
+			return
+		}
+	}
+	fmt.Fprintf(w, "{%q: %v}", "status", false)
 }

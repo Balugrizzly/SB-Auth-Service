@@ -13,8 +13,10 @@ type User struct {
 }
 
 // QUESTION: whats the auto update gorm code for unix time?
+
 type UserSession struct {
 	gorm.Model
+	// this can be a bit confusing User is simultaneously a User Struct and telling gorm it belongs to User
 	User          User
 	UserID        uint
 	SessionToken  string
