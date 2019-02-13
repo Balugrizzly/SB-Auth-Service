@@ -29,10 +29,13 @@ func main() {
 	}
 	defer db.Close()
 
+	env := &Env{db: db}
+
 	// db migrations
 	autoMigration(db)
 
-	env := &Env{db: db}
+	// session sync
+	env.sessionSync()
 
 	// Routes
 	r := mux.NewRouter()
@@ -151,7 +154,7 @@ func (env *Env) authUser(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&reqUser)
 
 	var dBUser User
-	env.db.Where("name = ?", reqUser.Name).Or("id = ?", reqUser.ID).Find(&dBUser)
+	env.db.Where("name = ?", reqUser.Name).Or("id = ?", reqUser.ID).First(&dBUser)
 
 	if !checkPasswordHash(reqUser.Pw, dBUser.Pw) {
 		_ = json.NewEncoder(w).Encode(ErrorResponse{Msg: "Auth failed"})
@@ -163,21 +166,25 @@ func (env *Env) authUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{%q: %q}", "token", token)
 
 	// update/create user sessions
-	for _, session := range userSessions {
-		if session.User.ID == dBUser.ID {
+	for i, session := range userSessions {
+		if session.UserID == dBUser.ID {
 			// user session already exists in memory
 
+			// QUESTION: why can i not use the the following syntax to update the section below
+			// session.User = dBUser
+
 			// updating memory user session
-			session.User = dBUser
-			session.SessionToken = token
-			session.LoginTimeUnix = time.Now().Unix()
-			session.LastSeenUnix = time.Now().Unix()
+			userSessions[i].User = dBUser
+			userSessions[i].SessionToken = token
+			userSessions[i].UserID = dBUser.ID
+			userSessions[i].LoginTimeUnix = time.Now().Unix()
+			userSessions[i].LastSeenUnix = time.Now().Unix()
 
 			//updating db user session
 			var dBSession UserSession
-			env.db.Model(&session.User).Related(&dBSession)
+			env.db.Where("user_id = ?", session.UserID).First(&dBSession)
 			dBSession.User = dBUser
-			dBSession.UserID = session.User.ID
+			dBSession.UserID = dBUser.ID
 			dBSession.SessionToken = token
 			dBSession.LoginTimeUnix = time.Now().Unix()
 			dBSession.LastSeenUnix = time.Now().Unix()
@@ -191,6 +198,7 @@ func (env *Env) authUser(w http.ResponseWriter, r *http.Request) {
 	userSession := UserSession{}
 	userSession.User = dBUser
 	userSession.SessionToken = token
+	userSession.UserID = dBUser.ID
 	userSession.LoginTimeUnix = time.Now().Unix()
 	userSession.LastSeenUnix = time.Now().Unix()
 	userSessions = append(userSessions, userSession)
@@ -253,4 +261,9 @@ func (env *Env) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	fmt.Fprintf(w, "{%q: %v}", "status", false)
+}
+
+func (env *Env) sessionSync() {
+	// Syncs the UserSession with the db
+	env.db.Find(&userSessions)
 }
