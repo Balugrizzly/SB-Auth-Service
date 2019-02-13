@@ -68,6 +68,7 @@ func (env *Env) usernameIsAvailable(w http.ResponseWriter, r *http.Request) {
 
 func (env *Env) updateUser(w http.ResponseWriter, r *http.Request) {
 	// updates the user
+	// empty fields will not overwritte data
 	// returns the updated user on success
 	w.Header().Set("Content-Type", "application/json")
 
@@ -82,7 +83,7 @@ func (env *Env) updateUser(w http.ResponseWriter, r *http.Request) {
 			_ = json.NewDecoder(r.Body).Decode(&reqUser)
 
 			var dBUser User
-			env.db.Where("id = ?", session.User.ID).Find(&dBUser)
+			env.db.Where("id = ?", session.UserID).Find(&dBUser)
 
 			if dBUser.Name != reqUser.Name {
 				if usernameExists(env.db, reqUser.Name) {
