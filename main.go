@@ -41,9 +41,9 @@ func main() {
 	r := mux.NewRouter()
 	// Post
 	r.HandleFunc("/createuser", env.createUser).Methods("POST")
-	r.HandleFunc("/isauthenticated", env.isAuthenticated).Methods("POST")
 
 	// JWT token required
+	r.HandleFunc("/isauthenticated", env.isAuthenticated).Methods("POST")
 	r.HandleFunc("/authuser", env.authUser).Methods("POST")
 	r.HandleFunc("/updateuser", env.updateUser).Methods("POST")
 	r.HandleFunc("/deleteuser", env.deleteUser).Methods("POST")
