@@ -32,7 +32,7 @@ Creates a user with the desired Name and Pw.
 **Request Body:**
 
 Name | Type | Mandatory | Info
------------- | ------------ | ------------
+------------ | ------------ | ------------ | ------------
 Name | STRING | YES | Has to be unique.
 Pw | STRING | NO | Can be empty.
 
