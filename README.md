@@ -58,7 +58,7 @@ Pw | STRING | NO | Can be empty.
 **Request Body:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 Name | STRING | YES
 Pw | STRING | YES
 
@@ -75,7 +75,7 @@ Pw | STRING | YES
 **Headers:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 token | STRING | YES
 
 **Request Body:** None
@@ -98,13 +98,13 @@ Non given or emtpy Request Body parameters will not overwrite existing data!
 **Headers:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 token | STRING | YES
 
 **Request Body:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 Name | STRING | NO
 Pw | STRING | NO
 
@@ -129,7 +129,7 @@ Soft deletes the user associated with the provided token.
 **Headers:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 token | STRING | YES
 
 **Request Body:** None
@@ -152,7 +152,7 @@ The Password wont be returned!
 **Request Body:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 Name | STRING | NO
 Id | INT | NO
 
@@ -178,7 +178,7 @@ Id | INT | NO
 **Request Body:**
 
 Name | Type | Mandatory |
------------- | ------------
+------------ | ------------ | ------------
 Name | STRING | NO
 
 **Response:**
